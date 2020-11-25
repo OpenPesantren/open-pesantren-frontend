@@ -1,6 +1,8 @@
 import Vue from 'vue'
 import VueRouter, { RouteConfig } from 'vue-router'
 import Home from '../views/Home.vue'
+import Storage from "@/store/Storage";
+import Constant from "@/config/Constant";
 
 Vue.use(VueRouter)
 
@@ -25,5 +27,20 @@ const router = new VueRouter({
   base: process.env.BASE_URL,
   routes
 })
+
+router.beforeEach((to, from, next) => {
+  const requiredAuth: any = to["matched"].some((record: Object) => record["meta"].requiredAuth);
+  if (requiredAuth) {
+    if (!Storage.isCookieExpired() && Storage.getCookie().get(Constant.KEY_CURRENT_LOGIN) != null) {
+      next();
+    } else {
+      next({
+        path: '/'
+      })
+    }
+  } else {
+    next();
+  }
+});
 
 export default router
